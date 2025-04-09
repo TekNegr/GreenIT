@@ -1,0 +1,92 @@
+@import "tailwindcss";
+@source "../views";
+
+body{
+    user-select: none;
+    margin: 0  ;
+}
+
+  #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    position : relative
+  }
+  #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    position : absolute
+  }
+
+  h1 {
+    padding-top : 1.5%;
+    font-weight: bolder;
+    font-size: 450%;
+    font-family: "Playfair Display", "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
+    color: #7B656F;
+    text-shadow: 1px 1px 2px white;
+    opacity : 90%;
+    position: absolute;
+    text-align: center;
+    height : 10%;
+    margin: auto;
+    z-index: 1;
+  }
+
+  h2 {
+    font-family: "Playfair Display", "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
+  }
+
+ h2.esri-widget__heading {
+    color: #7B656F;
+  }
+
+  h3 {
+    padding-top : 1%;
+    font-weight: normal;
+    font-size: 70%;
+    font-family: "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
+    color: rgb(104, 104, 104);
+    position: absolute;
+    z-index: 9;
+    text-align: center;
+    width : 100%;
+    height : 10%;
+    text-align: center;
+    margin: auto;
+    
+  }
+  h4 {
+    padding-top : 1%;
+    font-weight: bold;
+    font-size: 70%;
+    font-family: "Avenir Next", "Avenir", "Helvetica Neue", sans-serif;
+    color: #473B40;
+    position: absolute;
+    z-index: 10;
+    text-align: left;
+    margin-left: 5%;
+    bottom : 1%;
+    
+  }
+
+  a {
+    color: #7B656F;
+    font-weight: bold;
+    text-decoration: none;
+    text-shadow: -1px 0 #FFF, 0 1px #FFF, 1px 0 #FFF, 0 -1px #FFF
+  }
+
+div.esri-widget--button {
+    background-color: #FFF;
+    color: #7B656F;
+    z-index: 10
+}
+
+    .label-wrapper {
+      display: flex;
+      cursor: pointer;
+    }
