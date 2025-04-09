@@ -1,0 +1,18 @@
+use App\Models\Batiment;
+
+class BatimentController extends Controller
+{
+    public function index()
+    {
+        return response()->json(Batiment::all());
+    }
+
+    public function filter(Request $request)
+    {
+        return response()->json(
+            Batiment::where('dpe', $request->dpe)
+                    ->orWhere('ges', $request->ges)
+                    ->get()
+        );
+    }
+}
