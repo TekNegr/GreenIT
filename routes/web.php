@@ -11,3 +11,6 @@ Route::post('/log/scene-view', function() {
 Route::get('/', function () {
     return view('main');
 });
+
+Route::get('/batiments', [BatimentController::class, 'index']);
+Route::get('/batiments/filter', [BatimentController::class, 'filter']);
