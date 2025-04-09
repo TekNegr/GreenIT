@@ -80,18 +80,50 @@ git push origin feature/your-feature-name
 
 5. Create a Pull Request to `develop` branch for review
 
-### Resolving Conflicts
-1. If you encounter conflicts:
-```bash
-git fetch origin
-git rebase origin/develop
-```
+### Resolving Git Conflicts
 
-2. Resolve conflicts in your editor
-3. Continue rebase:
+#### When Push is Rejected
+If you get "non-fast-forward" errors when pushing:
 ```bash
+# First fetch latest changes
+git fetch origin
+
+# Then rebase your local branch
+git rebase origin/main
+
+# If conflicts occur:
+# 1. Open conflicted files and resolve (look for <<<<<<< markers)
+# 2. Mark as resolved:
 git add .
 git rebase --continue
+
+# 3. Push your changes
+git push origin main
+```
+
+#### Pulling Changes Correctly
+Always specify the branch when pulling:
+```bash
+git pull origin main
+```
+
+#### Common Scenarios:
+1. If you get "not specified a branch" error:
+```bash
+git pull origin main --rebase
+```
+
+2. If you accidentally committed to wrong branch:
+```bash
+git reset --soft HEAD~1  # Undo last commit keeping changes
+git stash               # Save changes
+git checkout correct-branch
+git stash pop           # Apply changes
+```
+
+3. If you need to force push (use with caution!):
+```bash
+git push origin main --force
 ```
 
 ## Development Tips
