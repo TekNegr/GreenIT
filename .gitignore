@@ -17,4 +17,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/storage/geo_dep_75.csv
+# /storage/geo_dep_75.csv
