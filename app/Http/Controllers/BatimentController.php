@@ -40,6 +40,7 @@ class BatimentController extends Controller
         return view('dpe.index', compact('batiments'));
     }
 
+
     public function getBuildingsGeoJson(Request $request)
     {
         try {
@@ -50,6 +51,12 @@ class BatimentController extends Controller
                 nom_rue,
                 code_postal,
                 commune,
+                consommation_energie,
+                estimation_ges,
+                classe_estimation_ges,
+                classe_consommation_energie,
+                annee_construction,
+                surface_habitable,
                 ST_X(geometry) AS longitude,
                 ST_Y(geometry) AS latitude
             ')
@@ -77,7 +84,12 @@ class BatimentController extends Controller
                     'properties' => [
                         'id' => $building->id,
                         'dpe_class' => $building->classe_consommation_energie,
-                        'address' => trim("{$building->numero_rue} {$building->nom_rue}, {$building->code_postal} {$building->commune}")
+                        'address' => trim("{$building->numero_rue} {$building->nom_rue}, {$building->code_postal} {$building->commune}"),
+                        'consommation_energie' => $building->consommation_energie,
+                        'estimation_ges' => $building->estimation_ges,
+                        'classe_estimation_ges' => $building->classe_estimation_ges,
+                        'annee_construction' => $building->annee_construction,
+                        'surface_habitable' => $building->surface_habitable,
                     ]
                 ];
             });

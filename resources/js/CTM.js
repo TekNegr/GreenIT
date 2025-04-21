@@ -94,12 +94,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     }]
                 },
                 popupTemplate: {
-                    title: "Building DPE: {dpe_class}",
-                    content: [{
-                        type: "text",
-                        text: "Address: {address}"
-                    }]
-                }
+                title: "DPE: {dpe_class}",
+                content: [{
+                    type: "text",
+                    text: `
+                        <b>Adresse:</b> {address}<br>
+                        <b>Consommation Energie:</b> {consommation_energie} kWh/m²/an<br>
+                        <b>Classe Consommation Energie:</b> {classe_consommation_energie}<br>
+                        <b>Estimation GES:</b> {estimation_ges} kgCO2/m²/an<br>
+                        <b>Classe GES:</b> {classe_estimation_ges}<br>
+                        <b>Année Construction:</b> {annee_construction}<br>
+                        <b>Surface Habitable:</b> {surface_habitable} m²<br>
+                    `
+                }]
+            }
             });
 
             // Add layer to map when view is ready
