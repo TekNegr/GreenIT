@@ -3,74 +3,48 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
+use App\Models\Appartement;
 
 class Batiment extends Model
 {
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
-        'numero_dpe',
-        'tr002_type_batiment_id',
-        'partie_batiment',
-        'consommation_energie',
-        'classe_consommation_energie',
-        'estimation_ges',
-        'classe_estimation_ges',
-        'annee_construction',
-        'surface_habitable',
-        'tv016_departement_id',
-        'commune',
-        'code_postal',
-        'geometry'
+        'id',
+        'latitude',
+        'longitude',
+        'address_text',
+        'avg_dpe_grade',
+        'avg_ges_grade',
+        'avg_energy_consumption',
+        'avg_carbon_emission',
+        'apartments_count',
     ];
 
-    public function scopeWithCoordinates($query)
+    protected $casts = [
+        'latitude' => 'decimal:6',
+        'longitude' => 'decimal:6',
+        'avg_energy_consumption' => 'float',
+        'avg_carbon_emission' => 'float',
+        'apartments_count' => 'integer',
+    ];
+
+    protected static function boot()
     {
-        return $query->whereNotNull('geometry')
-            ->whereRaw("ST_X(geometry) != 0 AND ST_Y(geometry) != 0");
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid();
+            }
+        });
     }
 
-    public function scopeWithinBoundingBox($query, $minLng, $minLat, $maxLng, $maxLat)
+    public function apartments(): HasMany
     {
-        return $query->whereRaw("MBRContains(
-            ST_GeomFromText('Polygon((
-                $minLng $minLat,
-                $maxLng $minLat,
-                $maxLng $maxLat,
-                $minLng $maxLat,
-                $minLng $minLat
-            ))'),
-            geometry
-        )");
-    }
-
-    protected $appends = ['dpe_color', 'is_apartment'];
-
-    public function typeBatiment(): BelongsTo
-    {
-        return $this->belongsTo(TypeBatiment::class, 'tr002_type_batiment_id');
-    }
-
-    public function departement(): BelongsTo
-    {
-        return $this->belongsTo(Departement::class, 'tv016_departement_id');
-    }
-
-    public function getDpeColorAttribute(): string
-    {
-        return match($this->classe_consommation_energie) {
-            'A' => 'bg-green-100 text-green-800',
-            'B' => 'bg-green-200 text-green-800',
-            'C' => 'bg-yellow-100 text-yellow-800',
-            'D' => 'bg-yellow-200 text-yellow-800',
-            'E' => 'bg-orange-100 text-orange-800',
-            'F' => 'bg-red-100 text-red-800',
-            'G' => 'bg-red-200 text-red-800',
-            default => 'bg-gray-100 text-gray-800'
-        };
-    }
-
-    public function getIsApartmentAttribute(): bool
-    {
-        return !empty($this->partie_batiment);
+        return $this->hasMany(Appartement::class, 'building_id');
     }
 }
