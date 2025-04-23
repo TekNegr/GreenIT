@@ -1,3 +1,4 @@
+// JS of the CodeTheMap API 
 document.addEventListener('DOMContentLoaded', function() {
     const viewDiv = document.getElementById('viewDiv');
     if (!viewDiv) {
@@ -6,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (!window.require) {
-        console.log('Loading ArcGIS API...');
         const arcgisScript = document.createElement('script');
         arcgisScript.src = 'https://js.arcgis.com/4.27/';
         arcgisScript.onload = initializeMap;
@@ -16,84 +16,120 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function initializeMap() {
-        console.log('Initializing map...');
-        
-        window.require([
-            "esri/config",
-            "esri/Map", 
+        require([
+            "esri/Map",
+            "esri/Basemap",
             "esri/views/SceneView",
-            "esri/layers/SceneLayer",
-            "esri/layers/GraphicsLayer",
-            "esri/Graphic",
-            "esri/geometry/Point",
-            "esri/symbols/SimpleMarkerSymbol"
-        ], function(esriConfig, Map, SceneView, SceneLayer, GraphicsLayer, Graphic, Point, SimpleMarkerSymbol) {
-            esriConfig.assetsPath = "https://js.arcgis.com/4.27/";
+            "esri/layers/GeoJSONLayer",
+            "esri/popup/content/TextContent"
+        ], (Map, Basemap, SceneView, GeoJSONLayer, TextContent) => {
             
-            // Try alternative buildings layer
-            const buildingsLayer = new SceneLayer({
-                url: "https://tiles.arcgis.com/tiles/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Paris_3D_Buildings/SceneServer/layers/0",
-                popupEnabled: true
-            });
-
-            // Fallback graphics layer if buildings fail
-            const fallbackLayer = new GraphicsLayer();
-            
+            // Initialize the map with CodeTheMap basemap
             const map = new Map({
-                basemap: "streets-navigation-vector",
-                ground: "world-elevation",
-                layers: [buildingsLayer, fallbackLayer]
+                basemap: new Basemap({
+                    portalItem: {
+                        id: "0560e29930dc4d5ebeb58c635c0909c9" // 3D Topographic Basemap
+                    }
+                }),
+                ground: "world-elevation"
             });
 
+            // Initialize the view
             const view = new SceneView({
                 container: "viewDiv",
                 map: map,
                 camera: {
                     position: {
-                        longitude: 2.340861,
-                        latitude: 48.882765,
-                        z: 178.813915
+                        longitude: 2.340861136194503,
+                        latitude: 48.88276594605576,
+                        z: 178.8139155479148
                     },
-                    heading: 29.620133,
-                    tilt: 65.597242
+                    heading: 29.620133897254565,
+                    tilt: 65.59724234196116
                 },
-                qualityProfile: "high",
-                environment: {
-                    lighting: {
-                        directShadowsEnabled: true
+                popup: {
+                    dockEnabled: true,
+                    dockOptions: {
+                        position: "bottom-right",
+                        breakpoint: false,
+                        buttonEnabled: true
                     }
-                },
-                ui: {
-                    components: []
                 }
             });
 
-            buildingsLayer.when(() => {
-                console.log("3D Buildings layer loaded successfully");
-            }).catch(err => {
-                console.warn("3D Buildings failed, adding fallback markers:", err);
-                // Add simple markers as fallback
-                const point = new Point({
-                    longitude: 2.340861,
-                    latitude: 48.882765
-                });
-                const marker = new Graphic({
-                    geometry: point,
-                    symbol: new SimpleMarkerSymbol({
-                        color: [226, 119, 40],
+            // DPE color mapping
+            const dpeColorMap = {
+                'A': [46, 204, 113],  // Green
+                'B': [39, 174, 96],   // Darker green
+                'C': [241, 196, 15],  // Yellow
+                'D': [230, 126, 34],  // Orange
+                'E': [211, 84, 0],    // Dark orange
+                'F': [231, 76, 60],   // Red
+                'G': [192, 57, 43]    // Dark red
+            };
+
+            // Create GeoJSON layer for DPE data
+            const dpeLayer = new GeoJSONLayer({
+                url: "/api/buildings/geojson",
+                copyright: "DPE Data",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-marker",
+                        size: 8,
+                        color: [255, 0, 0], // Default color if no DPE class
                         outline: {
-                            color: [255, 255, 255],
-                            width: 2
+                            width: 0.5,
+                            color: [255, 255, 255]
                         }
-                    })
-                });
-                fallbackLayer.add(marker);
+                    },
+                    visualVariables: [{
+                        type: "color",
+                        field: "dpe_class",
+                        stops: Object.entries(dpeColorMap).map(([dpeClass, color]) => ({
+                            value: dpeClass,
+                            color: color,
+                            label: dpeClass
+                        }))
+                    }]
+                },
+                popupTemplate: {
+                    title: "Building DPE: {dpe_class}",
+                    content: [{
+                        type: "text",
+                        text: "Address: {address}"
+                    }]
+                }
             });
 
+            // Add layer to map when view is ready
             view.when(() => {
-                console.log("Map view is ready");
-            }).catch(err => {
-                console.error("Map view error:", err);
+                map.add(dpeLayer);
+                console.log("DPE layer successfully loaded");
+                
+                // Debug: Check if features are loading
+                dpeLayer.when(() => {
+                    dpeLayer.queryFeatures().then((result) => {
+                        console.log("DPE features loaded:", result.features.length);
+                        if (result.features.length > 0) {
+                            console.log("First feature:", result.features[0].attributes);
+                            console.log("First feature geometry:", result.features[0].geometry);
+                        } else {
+                            console.warn("No DPE features loaded - checking API directly");
+                            fetch("/api/buildings/geojson")
+                                .then(res => res.json())
+                                .then(data => console.log("Raw API response:", data))
+                                .catch(err => console.error("API fetch error:", err));
+                        }
+                    }).catch(err => {
+                        console.error("Feature query error:", err);
+                    });
+                });
+            });
+
+            // Error handling
+            view.on("layerview-create-error", (event) => {
+                console.error("LayerView error:", event.error);
             });
         });
     }
