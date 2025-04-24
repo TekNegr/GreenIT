@@ -19,3 +19,5 @@ RUN curl -sS https://getcomposer.org/installer | php && \
     php composer.phar install
 
 CMD ["apache2-foreground"]
+
+# test
