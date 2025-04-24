@@ -1,0 +1,15 @@
+name: Build and Test Docker
+
+on:
+  push:
+    branches: [ v0.0 ]
+  pull_request:
+    branches: [ v0.0 ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker image
+        run: docker build -t greenit .
