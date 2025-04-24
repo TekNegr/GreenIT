@@ -1,13 +1,23 @@
-FROM python:3.10-slim
+FROM php:8.2-apache
+
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    git zip unzip libzip-dev && docker-php-ext-install zip
+
+
+# Copier les fichiers dans le conteneur
+COPY . /var/www/html
 
 LABEL maintainer="ton.nom@email.com" \
       version="0.1" \
       description="GreenIT - Analyse de l'impact écologique de projets logiciels en Python"
 
-WORKDIR /app
+# Config Laravel
+WORKDIR /var/www/html
 
-COPY . .
+RUN curl -sS https://getcomposer.org/installer | php && \
+    php composer.phar install
 
-CMD ["python", "main.py"]
+CMD ["apache2-foreground"]
 
-#test
+
