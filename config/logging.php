@@ -63,13 +63,19 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'permission' => 0664,
+            'locking' => false,
+            'try_lock' => false,
         ],
 
         'sidebar' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'path' => storage_path('logs/sidebar.log'),
-            'level' => 'info',
+            'level' => 'debug',
+            'days' => 1,
             'replace_placeholders' => true,
+            'permission' => 0664,
+            'tap' => [App\Logging\CustomizeSidebarFormatter::class],
         ],
 
         'daily' => [
