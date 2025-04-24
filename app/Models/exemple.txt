@@ -1,0 +1,61 @@
+1 - Perfectionner le modèle 
+
+-- Ajuster les modèles en fonction des besoins de la fonction AddLogementToDB
+
+2- créer les associations des batiments 
+
+AddLogementToDB()
+
+============== 
+Reponses API 
+
+=================
+BBox = Boite Géographique par coordonnées ( lonMin, LatMin, lonMax, latMax) // var 
+
+
+//Henin// 
+RequeteHTTP(ApiADEME($BBox)) => $reponses JSON
+
+JSONParse
+
+{
+    status : 200
+    requetes : $BBOx 
+    response : 
+    {
+        {
+            apt_id : 1
+            adresse : 27 rue du meilleur , 26006, Hernintsoa 
+            classe_dpe : A 
+            ...
+        },
+        {
+            apt_id : 2
+            adresse : 27 rue du pire , 26000, HEctorVille 
+            classe_dpe : A 
+            ...
+        }
+    }
+}
+
+
+$apt1 = {
+            apt_id : 1
+            adresse : 27 rue du meilleur , 26006, Hernintsoa 
+            classe_dpe : A 
+            ...
+        }
+
+
+//Hector // 
+
+AddLogementToDB($aptX JSON):
+
+
+// Henin /// 
+
+ParseJson(ResponseAPi) -> Array(Appartements)
+
+for each Apartement in Appartements:
+    AddLogementToDB(Apartement)
+   -> == Apartment Créé / Apartemetn déja existant ==
