@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Jobs\ImportDpeData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\Batiment;
+use App\Models\Appartement;
 
 class AppartementController extends Controller
 {
