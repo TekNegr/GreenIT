@@ -28,4 +28,10 @@ class AppartementController extends Controller
 
         return response()->json(['message' => 'ImportDpeData job dispatched', 'bbox' => $bboxArray]);
     }
+
+    public function addLogementToDb(Request $request)
+    {
+        // This function is a placeholder for the actual implementation
+        // that would save the appartement data to the database. With it's correct batiment
+    }
 }
