@@ -16,13 +16,13 @@ class Appartement extends Model
         'dpe_code',
         'latitude',
         'longitude',
+        'address',
         'surface_area',
         'year_built',
         'dpe_grade',
         'ges_grade',
         'energy_consumption',
         'carbon_emission',
-        'raw_ademe_data',
         'batiment_id', //Foreign Key
     ];
 
