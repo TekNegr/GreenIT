@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\BatimentController;
+use App\Http\Controllers\DpeController;
+
 
 Route::get('/', function () {
     return view('main');
@@ -29,3 +31,4 @@ Route::get('/log-test', function() {
 Route::get('/batiments', [BatimentController::class, 'index']);
 Route::get('/batiments/filter', [BatimentController::class, 'filter']);
 Route::get('/api/buildings/geojson', [BatimentController::class, 'getBuildingsGeoJson']);
+Route::post('/dpe/moyen', [DpeController::class, 'moyenne']);
