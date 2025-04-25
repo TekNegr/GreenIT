@@ -16,13 +16,13 @@ return new class extends Migration
             $table->string('dpe_code')->nullable();
             $table->decimal('latitude', 10, 6)->nullable();
             $table->decimal('longitude', 10, 6)->nullable();
+            $table->string('address')->nullable();
             $table->float('surface_area')->nullable();
             $table->integer('year_built')->nullable();
             $table->string('dpe_grade', 2)->nullable();
             $table->string('ges_grade', 2)->nullable();
             $table->float('energy_consumption')->nullable();
             $table->float('carbon_emission')->nullable();
-            $table->json('raw_ademe_data')->nullable();
             $table->uuid('batiment_id')->nullable();
             $table->timestamps();
 

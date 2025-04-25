@@ -52,15 +52,16 @@ class ApiController extends Controller
         if (isset($data['results']) && is_array($data['results'])) {
             foreach ($data['results'] as $result) {
                 $apartments[] = [
-                    'energy_class' => $result['classe_consommation_energie'] ?? null,
-                    'construction_year' => $result['annee_construction'] ?? null,
-                    'address' => $result['geo_adresse'] ?? null,
+                    'dpe_code' => $result['numero_dpe'] ?? null,
                     'latitude' => $result['latitude'] ?? null,
                     'longitude' => $result['longitude'] ?? null,
+                    'address' => $result['geo_adresse'] ?? null,
                     'surface_area' => $result['surface_thermique_lot'] ?? null,
+                    'year_built' => $result['annee_construction'] ?? null,
+                    'dpe_grade' => $result['classe_consommation_energie'] ?? null,
+                    'ges_grade' => $result['classe_estimationion_ges'] ?? null,
                     'energy_consumption' => $result['consommation_energie'] ?? null,
-                    'ges_estimation' => $result['estimation_ges'] ?? null,
-                    'dpe_number' => $result['numero_dpe'] ?? null,
+                    'carbon_emission' => $result['estimation_ges'] ?? null,
                     'building_type' => $result['tr002_type_batiment_description'] ?? null,
                 ];
             }
