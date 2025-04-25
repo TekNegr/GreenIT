@@ -51,4 +51,17 @@ class Appartement extends Model
     {
         return $this->belongsTo(Batiment::class, 'batiment_id');
     }
+
+    /**
+     * Temporary placeholder for AddLogementToDb function.
+     * Logs the data received.
+     *
+     * @param array $data
+     * @return void
+     */
+    public static function AddLogementToDb(array $data)
+    {
+        \Illuminate\Support\Facades\Log::info('AddLogementToDb called with data: ' . json_encode($data));
+        // TODO: Implement actual logic to assign appartement to building and save to DB
+    }
 }

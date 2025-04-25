@@ -31,6 +31,32 @@ class BatimentController extends Controller
         ]);
     }
 
+    /**
+     * API endpoint to receive BBox and dispatch ImportDpeData job.
+     */
+    public function fetchAppartementsByBBox(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'bbox' => 'required|string', // expecting "lonMin,latMin,lonMax,latMax"
+        ]);
+
+        $bboxString = $validated['bbox'];
+        $bboxParts = explode(',', $bboxString);
+
+        if (count($bboxParts) !== 4) {
+            return response()->json(['error' => 'Invalid bbox format'], 400);
+        }
+
+        $bbox = array_map('floatval', $bboxParts);
+
+        $apiUri = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe-france/lines?bbox=$lonMin,$latMin,$lonMax,$latMax&rows=$MaxRows';
+
+        \App\Jobs\ImportDpeData::dispatch($bbox, $apiUri);
+
+        return response()->json(['message' => 'ImportDpeData job dispatched for bbox: ' . $bboxString]);
+    }
+    
+
     public function showDpeData()
     {
         $batiments = Batiment::with(['typeBatiment', 'departement'])
@@ -45,21 +71,22 @@ class BatimentController extends Controller
         try {
             $query = Batiment::selectRaw('
                 id,
-                classe_consommation_energie,
-                numero_rue,
-                nom_rue,
-                code_postal,
-                commune,
-                ST_X(geometry) AS longitude,
-                ST_Y(geometry) AS latitude
+                avg_dpe_grade as classe_consommation_energie,
+                address_text as numero_rue,
+                "" as nom_rue,
+                "" as code_postal,
+                "" as commune,
+                latitude as latitude,
+                longitude as longitude
             ')
-            ->whereNotNull('geometry');
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude');
     
             if ($request->has('bbox')) {
                 $bbox = explode(',', $request->input('bbox'));
                 if (count($bbox) == 4) {
-                    $query->whereRaw("ST_Within(geometry, ST_MakeEnvelope(?, ?, ?, ?, 4326))", [
-                        $bbox[0], $bbox[1], $bbox[2], $bbox[3]
+                    $query->whereRaw("latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?", [
+                        $bbox[1], $bbox[3], $bbox[0], $bbox[2]
                     ]);
                 }
             }

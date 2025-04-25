@@ -5,6 +5,44 @@
         <!-- Buildings will be loaded here -->
     </div>
 
+    <div class="mt-4 p-2 bg-gray-700 rounded text-xs h-48 overflow-y-auto" id="logContainer">
+        <h3 class="font-bold mb-2">Live Logs</h3>
+        <ul id="logList" class="list-disc list-inside max-h-40 overflow-y-auto"></ul>
+    </div>
+
+    <div class="mt-4 p-2 bg-gray-700 rounded text-xs">
+        <h3 class="font-bold mb-2">Current BBox Status</h3>
+        <p>
+            <strong>Coordinates:</strong>
+            <span id="bboxCoordinates">
+                @if($currentBBox)
+                    {{ implode(', ', $currentBBox) }}
+                @else
+                    N/A
+                @endif
+            </span>
+        </p>
+        <p>
+            <strong>Cached:</strong>
+            <span id="bboxCachedStatus">
+                @if($isCached)
+                    Yes
+                @else
+                    No
+                @endif
+            </span>
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.livewire.on('bboxStatusUpdated', data => {
+                document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
+                document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
+            });
+        });
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Connect to building data updates
@@ -21,6 +59,16 @@
                     `;
                     container.appendChild(div);
                 });
+            });
+
+            // Listen for Livewire log messages
+            window.livewire.on('logMessage', message => {
+                const logList = document.getElementById('logList');
+                const li = document.createElement('li');
+                li.textContent = message;
+                logList.appendChild(li);
+                // Keep scroll at bottom
+                logList.scrollTop = logList.scrollHeight;
             });
 
             // Make pagination functions globally available

@@ -106,7 +106,51 @@ document.addEventListener('DOMContentLoaded', function() {
             view.when(() => {
                 map.add(dpeLayer);
                 console.log("DPE layer successfully loaded");
-                
+
+                // Send current BBox to backend API to fetch appartements
+                const sendBBoxToBackend = () => {
+                    const extent = view.extent;
+                    if (!extent) {
+                        console.warn("View extent not available");
+                        return;
+                    }
+                    const bbox = [
+                        extent.xmin,
+                        extent.ymin,
+                        extent.xmax,
+                        extent.ymax
+                    ].join(',');
+
+                    fetch('/api/fetch-appartements', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ bbox })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('ImportDpeData job dispatched:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error dispatching ImportDpeData job:', error);
+                    });
+                };
+
+                // Send BBox on initial load
+                sendBBoxToBackend();
+
+                // Optionally, send BBox on view extent change (debounced)
+                let debounceTimeout;
+                view.watch('extent', () => {
+                    clearTimeout(debounceTimeout);
+                    debounceTimeout = setTimeout(() => {
+                        sendBBoxToBackend();
+                    }, 1000);
+                });
+
                 // Debug: Check if features are loading
                 dpeLayer.when(() => {
                     dpeLayer.queryFeatures().then((result) => {

@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\BatimentController;
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\AppartementController;
+
 
 Route::get('/', function () {
     return view('main');
@@ -16,9 +19,12 @@ Route::post('/log/scene-view', function() {
     return response()->json(['status' => 'logged']);
 });
 
-Route::get('/test', function () {
-    return view('dpe.index');
-});
+// Route::get('/test', function () {
+//     return view('dpe.index');
+// });
+
+Route::get('/test', [ApiController::class, 'testApiPage']);
+Route::post('/test/fetch-data', [ApiController::class, 'fetchData']);
 
 Route::get('/log-test', function() {
     Log::channel('sidebar')->info('SIDEBAR CHANNEL TEST');
@@ -29,3 +35,4 @@ Route::get('/log-test', function() {
 Route::get('/batiments', [BatimentController::class, 'index']);
 Route::get('/batiments/filter', [BatimentController::class, 'filter']);
 Route::get('/api/buildings/geojson', [BatimentController::class, 'getBuildingsGeoJson']);
+Route::post('/api/fetch-appartements', [AppartementController::class, 'fetchAppartements']);

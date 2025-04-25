@@ -4,16 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateGeotilesTable extends Migration
 {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('appartements', function (Blueprint $table) {
+        Schema::create('geotiles', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('tile_key')->unique();
+            $table->json('bbox');
+            $table->timestamp('cached_at')->nullable();
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appartements');
+        Schema::dropIfExists('geotiles');
     }
-};
+}

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 class Sidebar extends Component
 {
     public $logs = [];
+    public $currentBBox = null;
+    public $isCached = false;
 
     public function mount()
     {
@@ -38,10 +40,24 @@ class Sidebar extends Component
         Log::channel('sidebar')->info($logMessage);
     }
 
-    protected $listeners = ['refreshLogs' => 'getLogs'];
+    protected $listeners = [
+        'refreshLogs' => 'getLogs',
+        'updateBBoxStatus' => 'updateBBoxStatus',
+    ];
+
+    public function updateBBoxStatus($bbox, $isCached)
+    {
+        $this->currentBBox = $bbox;
+        $this->isCached = $isCached;
+        $this->emit('bboxStatusUpdated', ['bbox' => $bbox, 'isCached' => $isCached]);
+    }
 
     public function render()
     {
-        return view('livewire.sidebar');
+        return view('livewire.sidebar', [
+            'currentBBox' => $this->currentBBox,
+            'isCached' => $this->isCached,
+            'logs' => $this->logs,
+        ]);
     }
 }

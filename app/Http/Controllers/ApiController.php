@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Jobs\ImportDpeData;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+
+class ApiController extends Controller
+{
+    public function testApiPage()
+    {
+        $logPath = storage_path('logs/laravel.log');
+        $logs = [];
+
+        if (File::exists($logPath)) {
+            $lines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $logs = array_slice($lines, -100);
+        }
+
+        return view('TestAPI', ['logs' => $logs]);
+    }
+
+    
+    public function fetchData(Request $request)
+    {
+        $bbox = $request->input('bbox');
+        $bboxArray = explode(',', $bbox);
+        if (count($bboxArray) !== 4) {
+            return response()->json(['error' => 'Bounding box (bbox) must have 4 comma-separated values'], 400);
+        }
+        $lonMin = $bboxArray[0];
+        $latMin = $bboxArray[1];
+        $lonMax = $bboxArray[2];
+        $latMax = $bboxArray[3];
+
+        $response = Http::withOptions(['verify' => false])
+            ->get('https://data.ademe.fr/data-fair/api/v1/datasets/dpe-france/lines', [
+                'bbox' => " $lonMin,$latMin,$lonMax,$latMax",
+                'rows' => 500,
+            ]);
+
+        return $response->json();
+    }
+
+    private function extractApartments(array $data): array
+    {
+        $apartments = [];
+
+        if (isset($data['results']) && is_array($data['results'])) {
+            foreach ($data['results'] as $result) {
+                $apartments[] = [
+                    'energy_class' => $result['classe_consommation_energie'] ?? null,
+                    'construction_year' => $result['annee_construction'] ?? null,
+                    'address' => $result['geo_adresse'] ?? null,
+                    'latitude' => $result['latitude'] ?? null,
+                    'longitude' => $result['longitude'] ?? null,
+                    'surface_area' => $result['surface_thermique_lot'] ?? null,
+                    'energy_consumption' => $result['consommation_energie'] ?? null,
+                    'ges_estimation' => $result['estimation_ges'] ?? null,
+                    'dpe_number' => $result['numero_dpe'] ?? null,
+                    'building_type' => $result['tr002_type_batiment_description'] ?? null,
+                ];
+            }
+        }
+
+        return $apartments;
+    }
+
+    
+}

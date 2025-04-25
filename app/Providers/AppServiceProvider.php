@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Dispatch ImportDpeData job at app launch with default BBox (example coordinates)
+        $defaultBBox = [2.2241, 48.8156, 2.4699, 48.9022]; // Paris approx bbox
+        $apiUri = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe-france/lines?bbox=$lonMin,$latMin,$lonMax,$latMax&rows=$MaxRows';
+
+        \App\Jobs\ImportDpeData::dispatch($defaultBBox, $apiUri);
     }
 }
