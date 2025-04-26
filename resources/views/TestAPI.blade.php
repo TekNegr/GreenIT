@@ -24,7 +24,7 @@
     <h2>API Response</h2>
     <div id="apiResponse" class="response">No data yet.</div>
 
-    <h2>Last 10 Laravel Log Lines</h2>
+    <h2>Last 100 Laravel Log Lines</h2>
     <div class="logs" id="logLines">
         @foreach ($logs as $line)
             {{ $line }}<br>

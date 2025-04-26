@@ -21,8 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
             "esri/Basemap",
             "esri/views/SceneView",
             "esri/layers/GeoJSONLayer",
-            "esri/popup/content/TextContent"
-        ], (Map, Basemap, SceneView, GeoJSONLayer, TextContent) => {
+            "esri/popup/content/TextContent",
+            "esri/geometry/support/webMercatorUtils"
+        ], (Map, Basemap, SceneView, GeoJSONLayer, TextContent, webMercatorUtils) => {
             
             // Initialize the map with CodeTheMap basemap
             const map = new Map({
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            /*
             // DPE color mapping
             const dpeColorMap = {
                 'A': [46, 204, 113],  // Green
@@ -101,11 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }]
                 }
             });
+            */
 
             // Add layer to map when view is ready
             view.when(() => {
-                map.add(dpeLayer);
-                console.log("DPE layer successfully loaded");
+                // map.add(dpeLayer);
+                // console.log("DPE layer successfully loaded");
 
                 // Send current BBox to backend API to fetch appartements
                 const sendBBoxToBackend = () => {
@@ -114,13 +117,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.warn("View extent not available");
                         return;
                     }
+                    const geographicExtent = webMercatorUtils.webMercatorToGeographic(extent);
+
                     const bbox = [
-                        extent.xmin,
-                        extent.ymin,
-                        extent.xmax,
-                        extent.ymax
+                        geographicExtent.xmin,
+                        geographicExtent.ymin,
+                        geographicExtent.xmax,
+                        geographicExtent.ymax
                     ].join(',');
 
+                    console.log("Sending BBox to backend:", bbox);
                     fetch('/api/fetch-appartements', {
                         method: 'POST',
                         headers: {
@@ -137,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .catch(error => {
                         console.error('Error dispatching ImportDpeData job:', error);
                     });
+                    console.log("BBox sent to backend");
                 };
 
                 // Send BBox on initial load
@@ -152,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 // Debug: Check if features are loading
+                /*
                 dpeLayer.when(() => {
                     dpeLayer.queryFeatures().then((result) => {
                         console.log("DPE features loaded:", result.features.length);
@@ -169,12 +177,75 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error("Feature query error:", err);
                     });
                 });
+                */
             });
 
             // Error handling
             view.on("layerview-create-error", (event) => {
                 console.error("LayerView error:", event.error);
             });
+
+            // Remove this entire view.watch('camera') block to avoid duplicate fetch calls
+            /*
+            view.watch('camera', (camera) => {
+                const position = {
+                    longitude: camera.position.longitude,
+                    latitude: camera.position.latitude,
+                    altitude: camera.position.z,
+                    heading: camera.heading,
+                    tilt: camera.tilt
+                };
+
+                const metersToDegreesLat = (meters) => meters / 11100000;
+                const metersToDegreesLon = (meters, latitude) => meters / (11100000 * Math.cos(latitude * Math.PI / 180));
+
+                const altitude = camera.position.z; // in meters
+                const fovRadians = camera.fov * Math.PI / 180;
+                const rangeM = Math.tan(fovRadians) * altitude;
+
+                const rangeLat = metersToDegreesLat(rangeM);
+                const rangeLon = metersToDegreesLon(rangeM, camera.position.latitude);
+
+                const bbox = [
+                    camera.position.longitude - rangeLon,
+                    camera.position.latitude - rangeLat,
+                    camera.position.longitude + rangeLon,
+                    camera.position.latitude + rangeLat
+                ].join(',');
+                console.log("Camera position:", position);
+
+                // if (range < 1000) {
+                //     view.popup.open({
+                //         title: "Camera Position",
+                //         content: `Longitude: ${position.longitude}, Latitude: ${position.latitude}, Altitude: ${position.altitude}, Heading: ${position.heading}, Tilt: ${position.tilt}`,
+                //         location: camera.position
+                //     });
+                // }
+            
+                fetch('/api/fetch-appartement', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(bbox)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('SceneView position logged:', data);
+                })
+                .catch(error => {
+                    console.error('Error logging SceneView position:', error);
+                });
+                console.log("Camera range:", rangeM);
+                console.log("Camera BBox:", bbox);
+                console.log("Camera position:", position);
+                console.log("Camera heading:", camera.heading);
+                console.log("Camera tilt:", camera.tilt);
+                console.log("Camera fov:", camera.fov);
+                
+            });
+            */
         });
     }
 });

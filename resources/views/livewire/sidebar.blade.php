@@ -1,3 +1,10 @@
+    @livewireStyles
+@livewireScripts
+
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+
 <div class="h-screen w-64 bg-gray-800 text-white p-4 overflow-y-auto fixed left-0 top-0">
     <h2 class="text-xl font-bold mb-4">Building Data</h2>
     
@@ -36,11 +43,25 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            window.livewire.on('bboxStatusUpdated', data => {
-                document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
-                document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
-            });
-        });
+            // window.livewire.on('bboxStatusUpdated', data => {
+            //     document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
+            //     document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
+            // });
+            if (window.CTM) {
+            // Listen for bbox changes from CTM.js and emit Livewire event
+            window.CTM.onBBoxChange = function(newBBox) {
+                window.livewire.emit('updateBBoxStatus', { bbox: newBBox, isCached: false });
+            };
+
+            // Initialize with current bbox
+            const bbox = window.CTM.getBBox();
+            window.livewire.emit('updateBBoxStatus', { bbox: bbox, isCached: false });
+        } else {
+            document.getElementById('bboxCoordinates').textContent = 'CTM.js not loaded';
+        }
+});
+
+        
     </script>
 
     <script>

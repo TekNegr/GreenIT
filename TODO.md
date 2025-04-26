@@ -1,21 +1,21 @@
 # TODO List for Next Development Session
 
-0. Clean the useless branches
+0. Clean the useless branches //todo
 
-1. Change the models  
-   - Create Apartments from the buildings
-   - Link apartments to buildings
+1. Change the models  - done 
+   - Create Apartments from the buildings - done
+   - Link apartments to buildings - done 
 
-2. Refactor CSV import to ADEME API integration
+2. Refactor CSV import to ADEME API integration - Done 
 
-3. Implement CRON job for training
+3. Implement CRON job for training - done 
 
-4. Change the points' colors to correct DPE colors
+4. Change the points' colors to correct DPE colors //todo 
 
-5. Update symbols of buildings to change their colors accordingly (if possible)
+5. Update symbols of buildings to change their colors accordingly (if possible) //todo
 
-6. Subdivise buildings in apartments for display of data (if possible)
+6. Subdivise buildings in apartments for display of data (if possible) //todo
 
-7. Add Breeze authentication logins for cybersecurity
+7. Add Breeze authentication logins for cybersecurity //todo
 
-8. Create Docker container for deployment/publishing
+8. Create Docker container for deployment/publishing //fixme

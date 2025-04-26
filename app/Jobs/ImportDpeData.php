@@ -2,130 +2,82 @@
 
 namespace App\Jobs;
 
-use App\Models\Batiment;
-use App\Models\GeoTile;
-use App\Models\Appartement;
+use App\Http\Controllers\GeoTileController;
+use App\Http\Controllers\ApiController;
+use App\Http\Controllers\AppartementController;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
-
 
 class ImportDpeData implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $bbox;
-    protected $apiUri;
-    protected $baseUri = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe-france/lines';
-    protected $batchSize = 500;
 
-    public function __construct(array $bbox, string $apiUri)
+    public function __construct(array $bbox)
     {
+        Log::info("DPEJob - Initializing DPE import job with BBox: " . implode(',', $bbox));
         $this->bbox = $bbox;
-        $this->apiUri = $apiUri;
     }
 
     public function handle()
     {
-        Log::info("Starting DPE import job for BBox: " . implode(',', $this->bbox));
+        Log::info("DPEJob - Starting DPE import job for BBox: " . implode(',', $this->bbox));
 
-        // Divide BBox into GeoTiles (for simplicity, assume 1 tile = BBox here)
-        $tileKey = $this->generateTileKey($this->bbox);
+        // Step 1: Check GeoTile cache directly
+        Log::info("step 1 of importDpeData");
+        Log::info("Checking GeoTile cache for BBox: " . implode(',', $this->bbox));
+        $tileKey = implode('_', $this->bbox);
+        $geoTile = \App\Models\GeoTile::where('tile_key', $tileKey)->first();
 
-        // Check if tile is cached and not expired
-        $geoTile = GeoTile::where('tile_key', $tileKey)->first();
         if ($geoTile && !$geoTile->isExpired(60)) {
-            Log::info("GeoTile {$tileKey} is already cached and fresh. Skipping fetch.");
-            // Emit event to Livewire sidebar for logging
-            \Livewire\Livewire::emit('logMessage', "GeoTile {$tileKey} is cached. Skipping fetch.");
-            // Emit event to update BBox status in sidebar
-            Log::info('Emitting updateBBoxStatus with bbox: ' . json_encode($this->bbox) . ' cached: true');
-            \Livewire\Livewire::emit('updateBBoxStatus', $this->bbox, true);
+            Log::info("GeoTile is cached. Skipping API call and database insertion.");
             return;
         }
 
-        // Fetch appartements from API in batches
-        $offset = 0;
-        $totalFetched = 0;
-        do {
-            $url = $this->buildApiUrl($this->bbox, $this->batchSize, $offset);
-            Log::info("Fetching data from API: $url");
-            $response = Http::get($url);
+        // Step 2: Call the API directly with bbox
+        Log::info("step 2 of importDpeData");
+        Log::info("Fetching data from API for BBox: " . implode(',', $this->bbox));
+        $apiController = new ApiController();
+        $request = new \Illuminate\Http\Request();
+        $request->merge(['bbox' => implode(',', $this->bbox)]);
+        $apiResponse = $apiController->fetchData($request);
 
-            if (!$response->ok()) {
-                Log::error("API request failed with status: " . $response->status());
-                break;
-            }
-
-            $data = $response->json();
-            $appartements = $data['records'] ?? [];
-
-            if (empty($appartements)) {
-                Log::info("No more appartements to fetch.");
-                break;
-            }
-
-            foreach ($appartements as $appartementData) {
-                try {
-                    // Call AddLogementToDb function (assumed to be a static method in Appartement model)
-                    Appartement::AddLogementToDb($appartementData);
-                    // Emit event to Livewire sidebar for logging
-                    \Livewire\Livewire::emit('logMessage', 'Appartement added: ' . json_encode($appartementData));
-                } catch (\Exception $e) {
-                    Log::error("Error adding logement: " . $e->getMessage());
-                }
-            }
-
-            $fetchedCount = count($appartements);
-            $totalFetched += $fetchedCount;
-            $offset += $fetchedCount;
-
-            // Respect API rate limit: 600 requests/min => 10 requests/sec, so sleep 0.1 sec
-            usleep(100000);
-
-        } while ($fetchedCount === $this->batchSize);
-
-        // Update or create GeoTile cache record
-        if (!$geoTile) {
-            $geoTile = new GeoTile();
-            $geoTile->tile_key = $tileKey;
-            $geoTile->bbox = $this->bbox;
+        if (!$apiResponse || empty($apiResponse)) {
+            Log::info("No data returned from the API for BBox: " . implode(',', $this->bbox));
+            return;
         }
-        $geoTile->cached_at = now();
-        $geoTile->save();
 
-        // Emit event to update BBox status in sidebar
-        \Livewire\Livewire::emit('updateBBoxStatus', $this->bbox, false);
+        // Step 3: Feed Data into the Database
+        Log::info("step 3 of importDpeData");
+        Log::info("Feeding data into the database for BBox: " . implode(',', $this->bbox));
+        if (!isset($apiResponse['results']) || !is_array($apiResponse['results'])) {
+            Log::info("Invalid API response format for BBox: " . implode(',', $this->bbox));
+            return;
+        }
+        if (empty($apiResponse['results'])) {
+            Log::info("No results found in the API response for BBox: " . implode(',', $this->bbox));
+            return;
+        }
+        // Extract apartments data using ApiController's extractApartments method
+        $apiController = new \App\Http\Controllers\ApiController();
+        $apartments = $apiController->extractApartments($apiResponse);
 
-        Log::info("Completed DPE import job. Total appartements fetched: $totalFetched");
-    }
+        // Loop through the extracted apartments and insert them into the database
+        $appartementController = new AppartementController();
+        foreach ($apartments as $appartementData) {
+            try {
+                $appartementController->addLogementToDB($appartementData);
+                Log::info("Appartement addition to the database successful: " . json_encode($appartementData));
+            } catch (\Exception $e) {
+                Log::error("Error adding appartement to the database: " . $e->getMessage());
+            }
+        }
 
-    protected function generateTileKey(array $bbox)
-    {
-        return implode('_', $bbox);
-    }
-
-    protected function buildApiUrl(array $bbox, int $rows, int $offset)
-    {
-        // API URI template: https://data.ademe.fr/data-fair/api/v1/datasets/dpe-france/lines?bbox=$lonMin,$latMin,$lonMax,l$atMax&rows=$MaxRows
-        // Replace placeholders with actual values
-        $lonMin = $bbox[0];
-        $latMin = $bbox[1];
-        $lonMax = $bbox[2];
-        $latMax = $bbox[3];
-
-        $url = str_replace(
-            ['$lonMin', '$latMin', '$lonMax', '$latMax', '$MaxRows'],
-            [$lonMin, $latMin, $lonMax, $latMax, $rows],
-            $this->apiUri
-        );
-
-        // Add offset parameter if API supports pagination by offset (not specified, so omitted here)
-        return $url;
+        Log::info("Completed DPE import job for BBox: " . implode(',', $this->bbox));
     }
 }

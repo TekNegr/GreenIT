@@ -26,6 +26,7 @@ class ApiController extends Controller
     
     public function fetchData(Request $request)
     {
+        Log::info('APIController - Received request to fetch data with bbox: ' . $request->input('bbox'));
         $bbox = $request->input('bbox');
         $bboxArray = explode(',', $bbox);
         if (count($bboxArray) !== 4) {
@@ -41,11 +42,16 @@ class ApiController extends Controller
                 'bbox' => " $lonMin,$latMin,$lonMax,$latMax",
                 'rows' => 500,
             ]);
-
+        Log::info('APIController - API response status: ' . $response->status());
+        if ($response->failed()) {
+            Log::error('APIController - API request failed: ' . $response->body());
+            return response()->json(['error' => 'Failed to fetch data from API'], 500);
+        }
+        Log::info('APIController - API response data: ' . $response->body());
         return $response->json();
     }
 
-    private function extractApartments(array $data): array
+    public function extractApartments(array $data): array
     {
         $apartments = [];
 
