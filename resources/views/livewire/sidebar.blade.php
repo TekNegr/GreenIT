@@ -1,4 +1,4 @@
-    @livewireStyles
+@livewireStyles
 @livewireScripts
 
 <head>
@@ -43,25 +43,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // window.livewire.on('bboxStatusUpdated', data => {
-            //     document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
-            //     document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
-            // });
-            if (window.CTM) {
-            // Listen for bbox changes from CTM.js and emit Livewire event
-            window.CTM.onBBoxChange = function(newBBox) {
-                window.livewire.emit('updateBBoxStatus', { bbox: newBBox, isCached: false });
-            };
-
-            // Initialize with current bbox
-            const bbox = window.CTM.getBBox();
-            window.livewire.emit('updateBBoxStatus', { bbox: bbox, isCached: false });
-        } else {
-            document.getElementById('bboxCoordinates').textContent = 'CTM.js not loaded';
-        }
-});
-
-        
+            window.livewire.on('bboxStatusUpdated', data => {
+                document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
+                document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
+            });
+        });
     </script>
 
     <script>
