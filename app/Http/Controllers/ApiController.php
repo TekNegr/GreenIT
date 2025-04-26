@@ -47,7 +47,7 @@ class ApiController extends Controller
             Log::error('APIController - API request failed: ' . $response->body());
             return response()->json(['error' => 'Failed to fetch data from API'], 500);
         }
-        Log::info('APIController - API response data: ' . $response->body());
+        // Log::info('APIController - API response data: ' . $response->body());
         return $response->json();
     }
 

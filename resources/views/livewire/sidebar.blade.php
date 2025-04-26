@@ -8,47 +8,40 @@
 <div class="h-screen w-64 bg-gray-800 text-white p-4 overflow-y-auto fixed left-0 top-0">
     <h2 class="text-xl font-bold mb-4">Building Data</h2>
     
-    <div class="space-y-2 text-sm" id="buildingList">
-        <!-- Buildings will be loaded here -->
+    <!-- Mode Toggle -->
+    <div class="flex items-center mb-4 space-x-2">
+        <label for="toggleBuildings" class="text-sm font-medium">Show Buildings</label>
+        <input type="checkbox" id="toggleBuildings" wire:model="showBuildings" wire:change="toggleMode" class="cursor-pointer">
     </div>
 
-    <div class="mt-4 p-2 bg-gray-700 rounded text-xs h-48 overflow-y-auto" id="logContainer">
-        <h3 class="font-bold mb-2">Live Logs</h3>
-        <ul id="logList" class="list-disc list-inside max-h-40 overflow-y-auto"></ul>
+    <!-- Data List -->
+    <div class="space-y-2 text-sm" id="dataList" wire:key="data-list-{{ $showBuildings ? 'building' : 'apartment' }}">
+        @if ($showBuildings)
+            <!-- Display buildings -->
+            <div id="buildingList">
+                @forelse ($buildings as $building)
+                    <div class="p-2 bg-gray-700 rounded mb-2">
+                        <p class="font-bold">{{ $building['avg_dpe_grade'] ?? 'N/A' }}</p>
+                        <p class="text-xs">{{ $building['address_text'] ?? 'Unknown address' }}</p>
+                    </div>
+                @empty
+                    <div>No building data available.</div>
+                @endforelse
+            </div>
+        @else
+            <!-- Display apartments -->
+            <div id="apartmentList">
+                @forelse ($apartments as $apartment)
+                    <div class="p-2 bg-gray-700 rounded mb-2">
+                        <p class="font-bold">{{ $apartment['dpe_grade'] ?? 'N/A' }}</p>
+                        <p class="text-xs">{{ $apartment['address'] ?? 'Unknown address' }}</p>
+                    </div>
+                @empty
+                    <div>No apartment data available.</div>
+                @endforelse
+            </div>
+        @endif
     </div>
-
-    <div class="mt-4 p-2 bg-gray-700 rounded text-xs">
-        <h3 class="font-bold mb-2">Current BBox Status</h3>
-        <p>
-            <strong>Coordinates:</strong>
-            <span id="bboxCoordinates">
-                @if($currentBBox)
-                    {{ implode(', ', $currentBBox) }}
-                @else
-                    N/A
-                @endif
-            </span>
-        </p>
-        <p>
-            <strong>Cached:</strong>
-            <span id="bboxCachedStatus">
-                @if($isCached)
-                    Yes
-                @else
-                    No
-                @endif
-            </span>
-        </p>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            window.livewire.on('bboxStatusUpdated', data => {
-                document.getElementById('bboxCoordinates').textContent = data.bbox.join(', ');
-                document.getElementById('bboxCachedStatus').textContent = data.isCached ? 'Yes' : 'No';
-            });
-        });
-    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

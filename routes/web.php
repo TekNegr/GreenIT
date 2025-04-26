@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\BatimentController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppartementController;
+use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\GeoTileController;
+use App\Http\Controllers\DPEController;
 
 
 Route::get('/', function () {
@@ -35,7 +37,8 @@ Route::get('/log-test', function() {
 
 Route::get('/batiments', [BatimentController::class, 'index']);
 Route::get('/batiments/filter', [BatimentController::class, 'filter']);
-Route::get('/api/buildings/geojson', [BatimentController::class, 'getBuildingsGeoJson']);
-Route::post('/api/fetch-appartements', [AppartementController::class, 'fetchAppartements']);
+Route::get('/api/buildings/geojson', [DPEController::class, 'getBuildingsGeoJson']);
+Route::get('/api/apartments/geojson', [DPEController::class, 'getApartmentsGeoJson']);Route::post('/api/fetch-appartements', [AppartementController::class, 'fetchAppartements']);
 Route::post('/api/check-geotile', [GeoTileController::class, 'checkGeoTile']);
 Route::post('/api/fetch-data', [ApiController::class, 'fetchData']);
+Route::post('/api/BBoxUpdate', [GeneralController::class, 'handleBBoxUpdate']);

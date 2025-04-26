@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ].join(',');
 
                     console.log("Sending BBox to backend:", bbox);
-                    fetch('/api/fetch-appartements', {
+                    fetch('/api/BBoxUpdate', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Send BBox on initial load
                 sendBBoxToBackend();
-                window.livewire.emit('updateBBoxStatus', { bbox: bbox.split(',').map(Number), isCached: false });
+                // window.livewire.dispatch('updateBBoxStatus', { bbox: bbox.split(',').map(Number), isCached: false });
 
 
                 // Optionally, send BBox on view extent change (debounced)
