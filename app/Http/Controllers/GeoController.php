@@ -11,19 +11,19 @@ class GeoController extends Controller
     {
         $query = Building::query(); // ⚠️ à adapter si tu filtres aussi les appartements
 
-        // 🎯 Filtre type : "building" ou "appartement"
+        //  Filtre type : "building" ou "appartement"
         if ($request->has('type') && in_array($request->input('type'), ['building', 'appartement'])) {
             $query->where('type', $request->input('type'));
         }
 
-        // 🎯 Filtre DPE : "A", "B", ..., "G"
+        //  Filtre DPE : "A", "B", ..., "G"
         if ($request->has('dpe')) {
             $query->where('dpe_class', $request->input('dpe')); // ou 'dpe_note' selon ta base
         }
 
         $results = $query->get();
 
-        // 🗺️ Retour GeoJSON simplifié
+        // Retour GeoJSON simplifié
         $geojson = [
             'type' => 'FeatureCollection',
             'features' => $results->map(function ($item) {
