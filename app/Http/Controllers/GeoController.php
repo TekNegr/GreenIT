@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Building; // ou Appartement, selon ton modèle
+use App\Models\Building; 
 
 class GeoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Building::query(); // ⚠️ à adapter si tu filtres aussi les appartements
+        $query = Building::query(); 
 
         //  Filtre type : "building" ou "appartement"
         if ($request->has('type') && in_array($request->input('type'), ['building', 'appartement'])) {
