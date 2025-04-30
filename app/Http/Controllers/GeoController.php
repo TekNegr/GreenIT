@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Building; 
+use App\Models\Appartement; 
+use App\Models\Batiment; 
 
 class GeoController extends Controller
 {
