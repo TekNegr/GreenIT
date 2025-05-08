@@ -1,5 +1,7 @@
 <?
 
+namespace App\Services;
+
 class GeoJsonBuilder {
     public static function fromCollection($collection) {
         return [

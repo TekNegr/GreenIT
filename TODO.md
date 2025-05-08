@@ -1,14 +1,12 @@
 # TODO List for Next Development Session
 
-0. Clean the useless branches //todo
+0. Clean the useless branches & files //todo
 
-1. Change the models  - done 
-   - Create Apartments from the buildings - done
-   - Link apartments to buildings - done 
+1. Clean GeoJsonBuilder // Todo
 
-2. Refactor CSV import to ADEME API integration - Done 
+2. Correct GeneralController for Usage throughout the app //Todo
 
-3. Implement CRON job for training - done 
+3. Correct Filters of Display (and fetch) // Todo
 
 4. Change the points' colors to correct DPE colors //todo 
 

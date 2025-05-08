@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Jobs\ImportDpeData;
-use App\Http\Controllers\DPEController;
-use App\Http\Controllers\AppartementController;
-use Livewire\Livewire;
-use App\Http\Livewire\Sidebar;
-use App\Livewire\Sidebar as LivewireSidebar;
+use App\Services\GeoJsonBuilder;
+use App\Models\Batiment;
 use Illuminate\Support\Facades\Log;
 
 class GeneralController extends Controller
@@ -26,19 +23,19 @@ class GeneralController extends Controller
 
         // Dispatch ImportDpeData job with bbox
         ImportDpeData::dispatch($bbox);
-        Log::info('GeneralController - Dispatched ImportDpeData job with bbox: ' . implode(',', $bbox) . 'raw' . json_encode($bbox));
+        Log::info('GeneralController - Dispatched ImportDpeData job with bbox: ' . implode(',', $bbox) . ' raw ' . json_encode($bbox));
 
-        // Call DPEController method to create GeoJSON points for color rendering
-        $dpeController = app(DPEController::class);
-        $geojson = $dpeController->createGeoJsonForBBox($bbox);
+        // Query Batiment models within bbox
+        $batiments = Batiment::whereBetween('latitude', [$bbox[1], $bbox[3]])
+            ->whereBetween('longitude', [$bbox[0], $bbox[2]])
+            ->get();
 
-        // Call AppartementController method to fetch appartements within bbox
-        // \Livewire\Livewire::dispatch('updateBBoxStatus', ['bbox' => $bbox], false)->to(LivewireSidebar::class);
+        // Generate GeoJson using GeoJsonBuilder service
+        $geojson = GeoJsonBuilder::fromCollection($batiments);
 
         return response()->json([
             'message' => 'BBox processed',
             'geojson' => $geojson,
-            // 'appartements' => $appartements,
         ]);
     }
 }
